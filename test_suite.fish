@@ -14,9 +14,12 @@ echo "Spawning $CONTAINERS concurrent OS processes per test"
 echo "========================================================"
 
 function cleanup_on_exit --on-signal SIGINT
-    echo -e "\n[!] Caught Ctrl+C. Killing all background processes..."
-    # pkill -P %self kills all direct children of the current shell
-    pkill -P %self 2>/dev/null
+    echo -e "\n[!] Caught Ctrl+C. Forcefully terminating all background workers..."
+    # 1. Kill all background jobs known to this shell
+    kill (jobs -p) 2>/dev/null
+    # 2. Kill any remaining stress_tool processes to be safe
+    pkill -9 -f "toit run stress_tool.toit" 2>/dev/null
+    pkill -9 -f "stress_tool.sh" 2>/dev/null
     exit 1
 end
 

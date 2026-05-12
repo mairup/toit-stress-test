@@ -8,7 +8,7 @@ CONTAINERS=""
 
 # Handle cleanup of child processes (like the Toit VM) on exit
 cleanup() {
-    pkill -P $$ 2>/dev/null
+    pkill -9 -P $$ 2>/dev/null
     exit 1
 }
 trap cleanup SIGINT SIGTERM

@@ -15,31 +15,31 @@ A modular and configurable utility designed to stress the Toit VM and container 
 
 ## Usage
 
-This tool is entirely configured via the `config.toit` file. This approach ensures that your benchmark parameters remain consistent across local tests and device deployments.
+This tool is configured via the `config.toit` file.
 
-### Configuration (`config.toit`)
+### Configuration (`parameters.cfg`)
 
-Before running the test, edit `config.toit` to set your desired parameters:
+Before running the test, edit `parameters.cfg` using bash or any text editor:
 
-- `DEFAULT_TASKS`: Number of concurrent tasks.
-- `DEFAULT_INTENSITY`: Load level (`0.20` for min, `0.65` for medium, `0.90` for high, `1.00` for max).
-- `DEFAULT_DURATION_SECONDS`: Run duration in seconds, or `null` for an infinite run.
-
-### Running on a Device (Jaguar)
-
-Once configured, simply flash and run the test on your ESP32 device using Jaguar:
-
-```bash
-jag run stress_tool.toit
+```ini
+DEFAULT_TASKS=5
+DEFAULT_INTENSITY=0.65
+DEFAULT_DURATION_SECONDS=30
 ```
 
 ### Running Locally (PC)
 
-You can also run the test on your local machine using the Toit VM:
+You can run the test on your local machine using the Toit VM. It will automatically read the `parameters.cfg` file from your disk:
 
 ```bash
 toit run stress_tool.toit
 ```
+
+### ⚠️ Running on a Device (Jaguar)
+
+Because this tool now reads a file (`parameters.cfg`) from the local Linux filesystem using `host.file`, **it will not compile out-of-the-box on an ESP32 via `jag run`**. ESP32 devices do not have access to your PC's filesystem.
+
+To run this on an ESP32, you will need to either pass the config as an asset (`--assets`) and switch the import to `system.assets`, or use Jaguar defines (`-D`).
 
 
 ## Project Structure

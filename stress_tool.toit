@@ -1,4 +1,4 @@
-import .config as config
+import host.file
 import math
 
 class StressTester:
@@ -80,11 +80,32 @@ class Matrix:
           result[i][j] += data[i][k] * other.data[k][j]
     return Matrix rows other.cols result
 
+parse_cfg config_string/string -> Map:
+  params := {:}
+  lines := config_string.split "\n"
+  lines.do: | line |
+    line = line.trim
+    if line != "" and not (line.starts_with "#") and line.contains "=":
+      parts := line.split "="
+      params[parts[0].trim] = parts[1].trim
+  return params
+
 main:
-  duration_s := config.DEFAULT_DURATION_SECONDS
+  // Read from the Linux filesystem
+  config_string := (file.read_contents "parameters.cfg").to_string
+  cfg := parse_cfg config_string
+
+  tasks := cfg.contains "DEFAULT_TASKS" ? int.parse cfg["DEFAULT_TASKS"] : 5
+  intensity := cfg.contains "DEFAULT_INTENSITY" ? float.parse cfg["DEFAULT_INTENSITY"] : 0.65
+  
+  duration_s /int? := 30
+  if cfg.contains "DEFAULT_DURATION_SECONDS":
+    raw := cfg["DEFAULT_DURATION_SECONDS"]
+    duration_s = (raw == "null" or raw == "infinite") ? null : int.parse raw
+
   tester := StressTester
-    --tasks_count=config.DEFAULT_TASKS
-    --intensity=config.DEFAULT_INTENSITY
+    --tasks_count=tasks
+    --intensity=intensity
     --duration=(duration_s ? (Duration --s=duration_s) : null)
   
   tester.run

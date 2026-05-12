@@ -12,7 +12,7 @@ class StressTester:
   duration/Duration?
   should_print/bool
 
-  constructor --.tasks_count=5 --.intensity=MEDIUM --.duration=null --.should_print=true:
+  constructor --.tasks_count=5 --.intensity=MEDIUM --.duration=null --.should_print=false:
 
   run:
     if should_print:
@@ -101,14 +101,12 @@ class StressTester:
 
 main args/List:
   tasks := config.DEFAULT_TASKS
-  verbose := true
+  print_enabled := false
   
   processed_args := []
   args.do: | arg |
     if arg == "--print":
-      verbose = true
-    else if arg == "--silent":
-      verbose = false
+      print_enabled = true
     else:
       processed_args.add arg
 
@@ -120,6 +118,6 @@ main args/List:
     --tasks_count=tasks
     --intensity=config.DEFAULT_INTENSITY
     --duration=(duration_s ? (Duration --s=duration_s) : null)
-    --should_print=verbose
+    --should_print=print_enabled
   
   tester.run

@@ -28,6 +28,7 @@ cat parameters.cfg | while read -l line
         set key (string trim $parts[1])
         set value (string trim $parts[2])
         if test -n "$key"; and test -n "$value"
+            # Ensure iterations are treated as integers in Toit
             echo "$key ::= $value" >> config.toit
         end
     end

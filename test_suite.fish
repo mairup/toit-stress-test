@@ -15,7 +15,8 @@ echo "========================================================"
 
 function cleanup_on_exit --on-signal SIGINT
     echo -e "\n[!] Caught Ctrl+C. Killing all background processes..."
-    kill (jobs -p) 2>/dev/null
+    # pkill -P %self kills all direct children of the current shell
+    pkill -P %self 2>/dev/null
     exit 1
 end
 
@@ -23,16 +24,20 @@ function run_test
     set tasks $argv[1]
     set intensity $argv[2]
     set duration $argv[3]
-    set desc $argv[4]
+    set mandel_iters $argv[4]
+    set pi_iters $argv[5]
+    set desc $argv[6]
 
     echo ""
     echo ">>> [TEST] $desc"
-    echo ">>> [CONF] Tasks/Process: $tasks | Intensity: $intensity | Duration: $duration"
+    echo ">>> [CONF] Tasks/Process: $tasks | Intensity: $intensity | Duration: $duration | Mandel: $mandel_iters | Pi: $pi_iters"
     
     # Overwrite parameters.cfg for this specific test
     echo "DEFAULT_TASKS=$tasks" > parameters.cfg
     echo "DEFAULT_INTENSITY=$intensity" >> parameters.cfg
     echo "DEFAULT_DURATION_SECONDS=$duration" >> parameters.cfg
+    echo "MANDELBROT_ITERATIONS=$mandel_iters" >> parameters.cfg
+    echo "PI_ITERATIONS=$pi_iters" >> parameters.cfg
 
     # Spawn N processes in the background
     for i in (seq 1 $CONTAINERS)
@@ -50,11 +55,13 @@ end
 # DECLARATIVE TEST LIST
 # ---------------------------------------------------------
 
-run_test 2 0.20 15 "Light Warmup"
-run_test 5 0.65 30 "Standard Operations"
-run_test 15 0.65 30 "High Task Contention"
-run_test 5 1.00 45 "CPU Bound Maximum Pressure"
-run_test 20 1.00 60 "The Gauntlet"
+# Format: tasks intensity duration mandel_iters pi_iters description
+
+run_test 2  0.20 15 100 5000   "Light Warmup"
+run_test 5  0.65 30 500 20000  "Standard Operations"
+run_test 15 0.65 30 500 20000  "High Task Contention"
+run_test 5  1.00 45 1000 50000 "CPU Bound Maximum Pressure"
+run_test 20 1.00 60 2000 100000 "The Gauntlet"
 
 echo ""
 echo "========================================================"

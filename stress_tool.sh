@@ -6,6 +6,13 @@
 TARGET="jag" # Default target
 CONTAINERS=""
 
+# Handle cleanup of child processes (like the Toit VM) on exit
+cleanup() {
+    pkill -P $$ 2>/dev/null
+    exit 1
+}
+trap cleanup SIGINT SIGTERM
+
 # Check if first parameter is a number
 if [[ "$1" =~ ^[0-9]+$ ]]; then
     CONTAINERS=$1

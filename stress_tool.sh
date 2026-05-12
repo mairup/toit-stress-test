@@ -4,6 +4,13 @@
 # Automatically translates parameters.cfg into a Toit config file and executes.
 
 TARGET="jag" # Default target
+CONTAINERS=""
+
+# Check if first parameter is a number
+if [[ "$1" =~ ^[0-9]+$ ]]; then
+    CONTAINERS=$1
+    shift
+fi
 
 # Parse CLI arguments
 while [[ "$#" -gt 0 ]]; do
@@ -11,13 +18,13 @@ while [[ "$#" -gt 0 ]]; do
         --jag|-j) TARGET="jag"; shift ;;
         --toit|-t) TARGET="toit"; shift ;;
         --help|-h) 
-            echo "Usage: ./stress_tool.sh [options]"
+            echo "Usage: ./stress_tool.sh [task_count] [options]"
             echo "Options:"
             echo "  -j, --jag    Run on an ESP32 device using Jaguar (default)"
             echo "  -t, --toit   Run locally using the Toit VM"
             echo "  -h, --help   Show this help message"
             echo ""
-            echo "Configure parameters by editing parameters.cfg before running."
+            echo "Example: ./stress_tool.sh 15 -t"
             exit 0
             ;;
         *) echo "Unknown parameter passed: $1"; exit 1 ;;
@@ -48,6 +55,9 @@ while IFS='=' read -r key value; do
     value=$(echo "$value" | xargs)
     
     if [[ -n "$key" && -n "$value" ]]; then
+        if [[ "$key" == "DEFAULT_TASKS" && -n "$CONTAINERS" ]]; then
+            value="$CONTAINERS"
+        fi
         echo "${key} ::= ${value}" >> config.toit
     fi
 done < parameters.cfg

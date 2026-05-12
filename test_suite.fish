@@ -40,7 +40,11 @@ function run_test
 
     # Spawn N processes in the background
     for i in (seq 1 $CONTAINERS)
-        ./stress_tool.sh --toit &
+        if test $i -eq 1
+            ./stress_tool.sh --toit &
+        else
+            ./stress_tool.sh --toit --slave &
+        end
     end
 
     # Wait for all background processes to finish

@@ -5,6 +5,7 @@
 
 TARGET="jag" # Default target
 CONTAINERS=""
+SLAVE_MODE=""
 
 # Handle cleanup of child processes (like the Toit VM) on exit
 cleanup() {
@@ -24,11 +25,13 @@ while [[ "$#" -gt 0 ]]; do
     case $1 in
         --jag|-j) TARGET="jag"; shift ;;
         --toit|-t) TARGET="toit"; shift ;;
+        --slave) SLAVE_MODE="--slave"; shift ;;
         --help|-h) 
             echo "Usage: ./stress_tool.sh [task_count] [options]"
             echo "Options:"
             echo "  -j, --jag    Run on an ESP32 device using Jaguar (default)"
             echo "  -t, --toit   Run locally using the Toit VM"
+            echo "  --slave      Run in slave mode (minimal printing)"
             echo "  -h, --help   Show this help message"
             echo ""
             echo "Example: ./stress_tool.sh 15 -t"
@@ -78,7 +81,7 @@ if [ "$TARGET" == "jag" ]; then
     jag run stress_tool.toit
 else
     echo "Running locally via Toit VM..."
-    toit run stress_tool.toit
+    toit run stress_tool.toit -- $SLAVE_MODE
 fi
 
 # We intentionally do NOT delete config.toit here to avoid breaking concurrent toit run processes.

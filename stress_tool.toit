@@ -10,28 +10,32 @@ class StressTester:
   tasks_count/int
   intensity/float
   duration/Duration?
+  is_master/bool
 
-  constructor --.tasks_count=5 --.intensity=MEDIUM --.duration=null:
+  constructor --.tasks_count=5 --.intensity=MEDIUM --.duration=null --.is_master=true:
 
   run:
-    print "--- STRESS TOOL INITIALIZED ---"
-    print "Tasks: $tasks_count"
-    print "Intensity: $(intensity * 100)%"
-    print "Duration: $(duration ? duration : "Infinite")"
+    if is_master:
+      print "--- STRESS TOOL INITIALIZED ---"
+      print "Tasks: $tasks_count"
+      print "Intensity: $(intensity * 100)%"
+      print "Duration: $(duration ? duration : "Infinite")"
     
     start_time := Time.monotonic_us
 
     tasks_count.repeat: | id |
       task:: _worker_loop id
     
-    // Start a single monitor task to provide high-level feedback
-    task:: _monitor_loop start_time
+    // Only start the monitor if this instance is the designated master
+    if is_master:
+      task:: _monitor_loop start_time
 
     if duration:
       sleep duration
-      print "--- STRESS TEST COMPLETE ---"
-      end_time := Time.monotonic_us
-      print "Total time elapsed: $((end_time - start_time) / 1_000_000)s"
+      if is_master:
+        print "--- STRESS TEST COMPLETE ---"
+        end_time := Time.monotonic_us
+        print "Total time elapsed: $((end_time - start_time) / 1_000_000)s"
       exit 0
     else:
       while true: sleep (Duration --h=24)
@@ -51,7 +55,8 @@ class StressTester:
         print ">>> [Monitor] Running: $(elapsed_s)s (Infinite mode)"
 
   _worker_loop id/int:
-    print "[Task $id] Online"
+    if is_master:
+      print "[Task $id] Online"
     while true:
       work_start := Time.monotonic_us
       _run_heavy_load
@@ -96,13 +101,25 @@ class StressTester:
 
 main args/List:
   tasks := config.DEFAULT_TASKS
-  if args.size > 0:
-    tasks = int.parse args[0]
+  master := true
+  
+  processed_args := []
+  args.do: | arg |
+    if arg == "--master":
+      master = true
+    else if arg == "--slave":
+      master = false
+    else:
+      processed_args.add arg
+
+  if processed_args.size > 0:
+    tasks = int.parse processed_args[0]
 
   duration_s /int? := config.DEFAULT_DURATION_SECONDS
   tester := StressTester
     --tasks_count=tasks
     --intensity=config.DEFAULT_INTENSITY
     --duration=(duration_s ? (Duration --s=duration_s) : null)
+    --is_master=master
   
   tester.run

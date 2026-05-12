@@ -15,47 +15,32 @@ A modular and configurable utility designed to stress the Toit VM and container 
 
 ## Usage
 
-Run the tool using the Toit VM:
+This tool is entirely configured via the `config.toit` file. This approach ensures that your benchmark parameters remain consistent across local tests and device deployments.
 
-```bash
-toit run stress_tool.toit [options]
-```
+### Configuration (`config.toit`)
 
-### Options
+Before running the test, edit `config.toit` to set your desired parameters:
 
-| Flag | Short | Description | Default |
-|------|-------|-------------|---------|
-| `--taskn=N` | `-t` | Number of concurrent tasks | `5` |
-| `--intensity=V` | `-i` | Load level (`min`, `medium`, `high`, `max`, or `0.0-1.0`) | `medium` |
-| `--duration=N` | `-d` | Run duration in seconds or `infinite` | `30` |
-| `--help` | `-h` | Show usage information | - |
+- `DEFAULT_TASKS`: Number of concurrent tasks.
+- `DEFAULT_INTENSITY`: Load level (`0.20` for min, `0.65` for medium, `0.90` for high, `1.00` for max).
+- `DEFAULT_DURATION_SECONDS`: Run duration in seconds, or `null` for an infinite run.
 
-### Examples
+### Running on a Device (Jaguar)
 
-**Running on PC (Local VM)**
-To pass arguments locally, use the `--` separator:
-
-**Standard Benchmark (10 tasks, 1 minute):**
-```bash
-toit run stress_tool.toit -- -t=10 -d=60
-```
-
-**Heavy Load (High intensity, infinite run):**
-```bash
-toit run stress_tool.toit -- --intensity=high --duration=infinite
-```
-
-**Custom Intensity (75% load):**
-```bash
-toit run stress_tool.toit -- -i=0.75
-```
-
-**Running on ESP32 (Jaguar)**
-When running on an actual device via Jaguar, command-line arguments are not passed to the application. Instead, edit your desired defaults in `config.toit` and then run:
+Once configured, simply flash and run the test on your ESP32 device using Jaguar:
 
 ```bash
 jag run stress_tool.toit
 ```
+
+### Running Locally (PC)
+
+You can also run the test on your local machine using the Toit VM:
+
+```bash
+toit run stress_tool.toit
+```
+
 
 ## Project Structure
 

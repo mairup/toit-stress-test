@@ -80,66 +80,11 @@ class Matrix:
           result[i][j] += data[i][k] * other.data[k][j]
     return Matrix rows other.cols result
 
-/** 
-Transforms a list of CLI tokens into a parameter map.
-Handles mapping of short flags (-i, -t, -d) to full names.
-*/
-extract_args args/List -> Map:
-  params := {:}
-  args.do: | arg |
-    key := ""
-    value := ""
-    if arg.starts_with "--":
-      parts := arg.split "="
-      key = parts[0][2..]
-      if parts.size > 1: value = parts[1]
-    else if arg.starts_with "-":
-      parts := arg.split "="
-      short := parts[0][1..]
-      if parts.size > 1: value = parts[1]
-      
-      if short == "i": key = "intensity"
-      else if short == "t": key = "taskn"
-      else if short == "d": key = "duration"
-    
-    if key != "": params[key] = value
-  return params
-
-/** Interfaces for creating and configuring StressTester from a parameter map. */
-run_from_config params/Map:
-  tasks := config.DEFAULT_TASKS
-  if params.contains "taskn": tasks = int.parse params["taskn"]
-
-  intensity := config.DEFAULT_INTENSITY
-  if params.contains "intensity":
-    raw := params["intensity"]
-    if raw == "min": intensity = StressTester.MIN
-    else if raw == "medium": intensity = StressTester.MEDIUM
-    else if raw == "high": intensity = StressTester.HIGH
-    else if raw == "max": intensity = StressTester.MAX
-    else: intensity = float.parse raw
-
-  duration_s /int? := config.DEFAULT_DURATION_SECONDS
-  if params.contains "duration":
-    raw := params["duration"]
-    duration_s = (raw == "infinite" ? null : int.parse raw)
-
+main:
+  duration_s := config.DEFAULT_DURATION_SECONDS
   tester := StressTester
-    --tasks_count=tasks
-    --intensity=intensity
+    --tasks_count=config.DEFAULT_TASKS
+    --intensity=config.DEFAULT_INTENSITY
     --duration=(duration_s ? (Duration --s=duration_s) : null)
   
   tester.run
-
-main args/List:
-  if args.contains "--help" or args.contains "-h" or args.size == 0:
-    print "Usage: toit run stress_tool.toit [options]"
-    print "Options:"
-    print "  -t, --taskn=N      Number of concurrent tasks (default: $config.DEFAULT_TASKS)"
-    print "  -i, --intensity=V  Load level (min, medium, high, max, or 0.0-1.0)"
-    print "  -d, --duration=N   Run duration in seconds or 'infinite'"
-    exit 0
-
-  params := extract_args args
-  run_from_config params
-

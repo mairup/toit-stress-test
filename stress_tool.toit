@@ -35,7 +35,6 @@ class StressTester:
 
   _worker_loop id/int:
     print "[Task $id] Online"
-    i := 0
     while true:
       work_start := Time.monotonic_us
       _run_heavy_load
@@ -45,10 +44,6 @@ class StressTester:
       if intensity < 1.0:
         sleep_us := (work_duration * (1.0 / intensity - 1.0)).to_int
         sleep (Duration --us=sleep_us)
-      
-      i++
-      if i % 1000 == 0:
-        print "[Task $id] Completed $i cycles"
 
   _run_heavy_load:
     // Mandelbrot set calculation - computationally intensive floating point math

@@ -1,6 +1,6 @@
 # Toit Stress Test Tool
 
-A modular and highly configurable utility designed to stress the Toit VM and container system through concurrent workloads of CPU-intensive arithmetic and memory-heavy matrix operations.
+A modular and configurable utility designed to stress the Toit VM and container system through concurrent workloads of CPU-intensive arithmetic and memory-heavy matrix operations.
 
 ## Features
 

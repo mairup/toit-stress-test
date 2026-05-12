@@ -80,10 +80,14 @@ class Matrix:
           result[i][j] += data[i][k] * other.data[k][j]
     return Matrix rows other.cols result
 
-main:
+main args/List:
+  tasks := config.DEFAULT_TASKS
+  if args.size > 0:
+    tasks = int.parse args[0]
+
   duration_s /int? := config.DEFAULT_DURATION_SECONDS
   tester := StressTester
-    --tasks_count=config.DEFAULT_TASKS
+    --tasks_count=tasks
     --intensity=config.DEFAULT_INTENSITY
     --duration=(duration_s ? (Duration --s=duration_s) : null)
   

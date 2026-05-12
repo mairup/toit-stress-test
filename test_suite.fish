@@ -41,9 +41,11 @@ function run_test
     # Spawn N processes in the background
     for i in (seq 1 $CONTAINERS)
         if test $i -eq 1
+            # The first process is allowed to print
             ./stress_tool.sh --toit &
         else
-            ./stress_tool.sh --toit --slave &
+            # All subsequent processes run in silent mode
+            ./stress_tool.sh --toit --silent &
         end
     end
 

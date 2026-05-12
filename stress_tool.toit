@@ -10,12 +10,12 @@ class StressTester:
   tasks_count/int
   intensity/float
   duration/Duration?
-  is_master/bool
+  should_print/bool
 
-  constructor --.tasks_count=5 --.intensity=MEDIUM --.duration=null --.is_master=true:
+  constructor --.tasks_count=5 --.intensity=MEDIUM --.duration=null --.should_print=true:
 
   run:
-    if is_master:
+    if should_print:
       print "--- STRESS TOOL INITIALIZED ---"
       print "Tasks: $tasks_count"
       print "Intensity: $(intensity * 100)%"
@@ -26,13 +26,13 @@ class StressTester:
     tasks_count.repeat: | id |
       task:: _worker_loop id
     
-    // Only start the monitor if this instance is the designated master
-    if is_master:
+    // Only start the monitor if printing is enabled
+    if should_print:
       task:: _monitor_loop start_time
 
     if duration:
       sleep duration
-      if is_master:
+      if should_print:
         print "--- STRESS TEST COMPLETE ---"
         end_time := Time.monotonic_us
         print "Total time elapsed: $((end_time - start_time) / 1_000_000)s"
@@ -55,7 +55,7 @@ class StressTester:
         print ">>> [Monitor] Running: $(elapsed_s)s (Infinite mode)"
 
   _worker_loop id/int:
-    if is_master:
+    if should_print:
       print "[Task $id] Online"
     while true:
       work_start := Time.monotonic_us
@@ -101,14 +101,14 @@ class StressTester:
 
 main args/List:
   tasks := config.DEFAULT_TASKS
-  master := true
+  verbose := true
   
   processed_args := []
   args.do: | arg |
-    if arg == "--master":
-      master = true
-    else if arg == "--slave":
-      master = false
+    if arg == "--print":
+      verbose = true
+    else if arg == "--silent":
+      verbose = false
     else:
       processed_args.add arg
 
@@ -120,6 +120,6 @@ main args/List:
     --tasks_count=tasks
     --intensity=config.DEFAULT_INTENSITY
     --duration=(duration_s ? (Duration --s=duration_s) : null)
-    --is_master=master
+    --should_print=verbose
   
   tester.run

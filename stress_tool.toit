@@ -23,6 +23,9 @@ class StressTester:
 
     tasks_count.repeat: | id |
       task:: _worker_loop id
+    
+    // Start a single monitor task to provide high-level feedback
+    task:: _monitor_loop start_time
 
     if duration:
       sleep duration
@@ -32,6 +35,20 @@ class StressTester:
       exit 0
     else:
       while true: sleep (Duration --h=24)
+
+  _monitor_loop start_time/int:
+    while true:
+      sleep (Duration --s=5)
+      now := Time.monotonic_us
+      elapsed_us := now - start_time
+      elapsed_s := elapsed_us / 1_000_000
+      
+      if duration:
+        percent := (elapsed_us * 100 / duration.in_us).to_int
+        if percent < 100:
+          print ">>> [Monitor] Progress: $percent% ($(elapsed_s)s / $(duration.in_s)s)"
+      else:
+        print ">>> [Monitor] Running: $(elapsed_s)s (Infinite mode)"
 
   _worker_loop id/int:
     print "[Task $id] Online"

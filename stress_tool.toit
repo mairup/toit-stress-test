@@ -47,7 +47,7 @@ class StressTester:
         sleep (Duration --us=sleep_us)
       
       i++
-      if i % 10 == 0:
+      if i % 1000 == 0:
         print "[Task $id] Completed $i cycles"
 
   _run_heavy_load:

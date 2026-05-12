@@ -32,19 +32,29 @@ toit run stress_tool.toit [options]
 
 ### Examples
 
+**Running on PC (Local VM)**
+To pass arguments locally, use the `--` separator:
+
 **Standard Benchmark (10 tasks, 1 minute):**
 ```bash
-toit run stress_tool.toit -t=10 -d=60
+toit run stress_tool.toit -- -t=10 -d=60
 ```
 
 **Heavy Load (High intensity, infinite run):**
 ```bash
-toit run stress_tool.toit --intensity=high --duration=infinite
+toit run stress_tool.toit -- --intensity=high --duration=infinite
 ```
 
 **Custom Intensity (75% load):**
 ```bash
-toit run stress_tool.toit -i=0.75
+toit run stress_tool.toit -- -i=0.75
+```
+
+**Running on ESP32 (Jaguar)**
+When running on an actual device via Jaguar, command-line arguments are not passed to the application. Instead, edit your desired defaults in `config.toit` and then run:
+
+```bash
+jag run stress_tool.toit
 ```
 
 ## Project Structure

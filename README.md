@@ -27,19 +27,20 @@ DEFAULT_INTENSITY=0.65
 DEFAULT_DURATION_SECONDS=30
 ```
 
-### Running Locally (PC)
+### Running the Tool
 
-You can run the test on your local machine using the Toit VM. It will automatically read the `parameters.cfg` file from your disk:
+We have provided a unified bash script that handles translating your `parameters.cfg` file into a Toit-compatible format on the fly. 
 
+To run the test on an **ESP32 device via Jaguar** (Default):
 ```bash
-toit run stress_tool.toit
+./stress_tool.sh
 ```
+*(Or explicitly use `./stress_tool.sh --jag`)*
 
-### ⚠️ Running on a Device (Jaguar)
-
-Because this tool now reads a file (`parameters.cfg`) from the local Linux filesystem using `host.file`, **it will not compile out-of-the-box on an ESP32 via `jag run`**. ESP32 devices do not have access to your PC's filesystem.
-
-To run this on an ESP32, you will need to either pass the config as an asset (`--assets`) and switch the import to `system.assets`, or use Jaguar defines (`-D`).
+To run the test locally on your **PC via the Toit VM**:
+```bash
+./stress_tool.sh --toit
+```
 
 
 ## Project Structure

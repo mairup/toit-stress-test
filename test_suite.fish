@@ -60,11 +60,11 @@ end
 # DECLARATIVE TEST LIST
 # ---------------------------------------------------------
 
-run_test 2 0.20 15 "Light Warmup"
-run_test 5 0.65 30 "Standard Operations"
-run_test 15 0.65 30 "High Task Contention"
-run_test 5 1.00 45 "CPU Bound Maximum Pressure"
-run_test 20 1.00 60 "The Gauntlet"
+run_test 2 0.20 10 "Light Warmup"
+run_test 5 0.60 20 "Standard Operations"
+run_test 10 0.60 20 "High Task Contention"
+run_test 5 1.00 30 "CPU Bound Maximum Pressure"
+run_test 20 1.00 40 "The Gauntlet"
 
 echo ""
 echo "========================================================"

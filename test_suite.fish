@@ -13,6 +13,12 @@ echo "Starting Gradual Stress Test Suite (Local PC)"
 echo "Spawning $CONTAINERS concurrent OS processes per test"
 echo "========================================================"
 
+function cleanup_on_exit --on-signal SIGINT
+    echo -e "\n[!] Caught Ctrl+C. Killing all background processes..."
+    kill (jobs -p) 2>/dev/null
+    exit 1
+end
+
 function run_test
     set tasks $argv[1]
     set intensity $argv[2]

@@ -66,6 +66,8 @@ class StressTester:
       if intensity < 1.0:
         sleep_us := (work_duration * (1.0 / intensity - 1.0)).to_int
         sleep (Duration --us=sleep_us)
+      else:
+        yield
 
   _run_heavy_load:
     // Mandelbrot set calculation - computationally intensive floating point math
@@ -74,6 +76,7 @@ class StressTester:
     max_iter := 500
     
     height.repeat: | y |
+      yield
       width.repeat: | x |
         zx := 0.0
         zy := 0.0
@@ -92,7 +95,8 @@ class StressTester:
     // Monte Carlo Pi estimation - intensive random number generation and math
     iterations := 20_000
     inside := 0
-    iterations.repeat:
+    iterations.repeat: | i |
+      if i % 1000 == 0: yield
       x := (random 1000) / 1000.0
       y := (random 1000) / 1000.0
       if x * x + y * y <= 1.0:
@@ -101,23 +105,13 @@ class StressTester:
 
 main args/List:
   tasks := config.DEFAULT_TASKS
-  print_enabled := false
-  
-  processed_args := []
-  args.do: | arg |
-    if arg == "--print":
-      print_enabled = true
-    else:
-      processed_args.add arg
+  duration_s := config.DURATION
+  print_enabled := args.contains "--print"
 
-  if processed_args.size > 0:
-    tasks = int.parse processed_args[0]
-
-  duration_s /int? := config.DEFAULT_DURATION_SECONDS
   tester := StressTester
     --tasks_count=tasks
     --intensity=config.DEFAULT_INTENSITY
-    --duration=(duration_s ? (Duration --s=duration_s) : null)
+    --duration=(duration_s != 0 ? (Duration --s=duration_s) : null)
     --should_print=print_enabled
   
   tester.run

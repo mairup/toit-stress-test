@@ -1,60 +1,64 @@
-#!/usr/bin/env fish
+#!/bin/bash
 
 # A declarative test suite to gradually increase stress.
 # Run locally on the PC by spawning multiple isolated Toit VM processes.
 
-set CONTAINERS 1
-if test (count $argv) -ge 1
-    set CONTAINERS $argv[1]
-end
+CONTAINERS=1
+if [ $# -ge 1 ]; then
+    CONTAINERS=$1
+fi
 
 echo "========================================================"
 echo "Starting Gradual Stress Test Suite (Local PC)"
 echo "Spawning $CONTAINERS concurrent OS processes per test"
 echo "========================================================"
 
-function cleanup_on_exit --on-signal SIGINT
+cleanup() {
     echo -e "\n[!] Caught Ctrl+C. Forcefully terminating all background workers..."
     # 1. Kill all background jobs known to this shell
-    kill (jobs -p) 2>/dev/null
+    # We use pkill -P to kill children of the current script's PID
+    pkill -9 -P $$ 2>/dev/null
     # 2. Kill any remaining stress_tool processes to be safe
-    pkill -9 -f "toit run stress_tool.toit" 2>/dev/null
+    pkill -9 -f "stress_tool.toit" 2>/dev/null
     pkill -9 -f "stress_tool.sh" 2>/dev/null
     exit 1
-end
+}
+trap cleanup SIGINT SIGTERM
 
-function run_test
-    set tasks $argv[1]
-    set intensity $argv[2]
-    set duration $argv[3]
-    set desc $argv[4]
+run_test() {
+    local tasks=$1
+    local intensity=$2
+    local duration=$3
+    local desc=$4
 
     echo ""
     echo ">>> [TEST] $desc"
     echo ">>> [CONF] Tasks/Process: $tasks | Intensity: $intensity | Duration: $duration"
     
     # Overwrite parameters.cfg for this specific test
-    echo "DEFAULT_TASKS=$tasks" > parameters.cfg
-    echo "DEFAULT_INTENSITY=$intensity" >> parameters.cfg
-    echo "DEFAULT_DURATION_SECONDS=$duration" >> parameters.cfg
+    cat > parameters.cfg <<EOF
+DEFAULT_TASKS=$tasks
+DEFAULT_INTENSITY=$intensity
+DURATION=$duration
+EOF
 
     # Spawn N processes in the background
-    for i in (seq 1 $CONTAINERS)
-        if test $i -eq 1
+    for ((i=1; i<=CONTAINERS; i++)); do
+        if [ $i -eq 1 ]; then
             # The first process is the designated reporter
-            ./stress_tool.sh --toit --print &
+            ./stress_tool.sh --toit -- --print &
         else
             # All subsequent processes are silent by default
             ./stress_tool.sh --toit &
         end
-    end
+    done
 
     # Wait for all background processes to finish
     wait
 
     echo ">>> Cooldown: waiting 2 seconds..."
     sleep 2
-end
+}
 
 # ---------------------------------------------------------
 # DECLARATIVE TEST LIST

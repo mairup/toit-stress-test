@@ -9,16 +9,12 @@ EXTRA_ARGS=""
 
 # Handle cleanup of child processes (like the Toit VM) on exit
 cleanup() {
-    pkill -9 -P $$ 2>/dev/null
+    # Kill any process that is running the stress tool.
+    # This ensures grandchildren (Toit VM) are killed even if the wrapper is intermediate.
+    pkill -9 -f "stress_tool.toit" 2>/dev/null
     exit 1
 }
 trap cleanup SIGINT SIGTERM
-
-# Check if first parameter is a number
-if [[ "$1" =~ ^[0-9]+$ ]]; then
-    CONTAINERS=$1
-    shift
-fi
 
 # Parse CLI arguments
 while [[ "$#" -gt 0 ]]; do
@@ -26,16 +22,16 @@ while [[ "$#" -gt 0 ]]; do
         --jag|-j) TARGET="jag"; shift ;;
         --toit|-t) TARGET="toit"; shift ;;
         --help|-h) 
-            echo "Usage: ./stress_tool.sh [task_count] [options] [-- [toit_args]]"
+            echo "Usage: ./stress_tool.sh [options] [-- [toit_args]]"
             echo "Options:"
-            echo "  -j, --jag    Run on an ESP32 device using Jaguar (default)"
-            echo "  -t, --toit   Run locally using the Toit VM"
-            echo "  -h, --help   Show this help message"
+            echo "  -j, --jag        Run on an ESP32 device using Jaguar (default)"
+            echo "  -t, --toit       Run locally using the Toit VM"
+            echo "  -h, --help       Show this help message"
             echo ""
-            echo "Example: ./stress_tool.sh 15 -t -- --print"
+            echo "Example: ./stress_tool.sh -t -- --print"
             exit 0
             ;;
-        --) shift; EXTRA_ARGS="$@"; break ;;
+        --) shift; EXTRA_ARGS="$EXTRA_ARGS $@"; break ;;
         *) EXTRA_ARGS="$EXTRA_ARGS $1"; shift ;;
     esac
 done
@@ -47,7 +43,7 @@ if [ ! -f "parameters.cfg" ]; then
     cat > parameters.cfg << 'EOF'
 DEFAULT_TASKS=5
 DEFAULT_INTENSITY=0.65
-DEFAULT_DURATION_SECONDS=30
+DURATION=30
 EOF
 fi
 
@@ -65,9 +61,6 @@ while IFS='=' read -r key value; do
     value=$(echo "$value" | xargs)
     
     if [[ -n "$key" && -n "$value" ]]; then
-        if [[ "$key" == "DEFAULT_TASKS" && -n "$CONTAINERS" ]]; then
-            value="$CONTAINERS"
-        fi
         echo "${key} ::= ${value}" >> "$TMP_FILE"
     fi
 done < parameters.cfg

@@ -42,8 +42,38 @@ To run the test locally on your **PC via the Toit VM**:
 ./stress_tool.sh --toit
 ```
 
+*Note: You can pass extra arguments to the Toit VM after a `--` separator, such as `./stress_tool.sh -t -- --print`.*
+
 
 ## Project Structure
 
-- `stress_tool.toit`: Core library and entry point containing the `StressTester` orchestrator and `Matrix` engine.
-- `config.toit`: Global default settings.
+- `stress_tool.toit`: Core library and entry point containing the orchestrator and load functions.
+- `config.toit`: Auto-generated file containing Toit constants based on parameters.cfg.
+- `stress_tool.sh`: The main unified shell runner.
+- `test_suite.sh`: The automated multi-process test orchestrator.
+
+## Automated Test Suite (`test_suite.sh`)
+
+For heavy-duty system load testing, the `test_suite.sh` script orchestrates a gradual, multi-process stress test on your local PC. It spawns multiple independent OS-level processes, each running its own instance of the Toit VM.
+
+### Usage
+
+Run the test suite and specify the number of concurrent OS processes (containers) you want to spawn:
+
+```bash
+./test_suite.sh <containers>
+```
+
+**Example (Spawning 32 concurrent OS processes):**
+```bash
+./test_suite.sh 32
+```
+
+The suite will automatically progress through several escalating stages, modifying the parameters on the fly:
+1. **Light Warmup**: Low intensity, short duration.
+2. **Standard Operations**: Medium intensity.
+3. **High Task Contention**: Medium intensity, high number of Toit tasks per process.
+4. **CPU Bound Maximum Pressure**: 100% intensity, moderate duration.
+5. **The Gauntlet**: 100% intensity, maximum task count, long duration.
+
+If your system begins to lock up, you can hit `Ctrl+C` to immediately forcefully terminate all associated background VMs and halt the test suite.

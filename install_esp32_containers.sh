@@ -1,43 +1,47 @@
-#!/usr/bin/env fish
+#!/bin/bash
 
 # This script installs multiple independent containers onto the ESP32 via Jaguar.
 # Each container runs in its own isolated memory space.
 
-set CONTAINERS 1
-if test (count $argv) -ge 1
-    set CONTAINERS $argv[1]
-end
+CONTAINERS=1
+if [ $# -ge 1 ]; then
+    CONTAINERS=$1
+fi
 
 echo "========================================================"
 echo "Installing $CONTAINERS separate containers to the ESP32..."
 echo "========================================================"
 
 # Ensure we have a parameters.cfg
-if not test -f parameters.cfg
-    echo "DEFAULT_TASKS=5" > parameters.cfg
-    echo "DEFAULT_INTENSITY=0.65" >> parameters.cfg
-    echo "DEFAULT_DURATION_SECONDS=infinite" >> parameters.cfg
-end
+if [ ! -f parameters.cfg ]; then
+    cat > parameters.cfg <<EOF
+DEFAULT_TASKS=5
+DEFAULT_INTENSITY=0.65
+DURATION=0
+EOF
+fi
 
 # Generate the config.toit so the containers compile correctly
 echo "Translating parameters.cfg..."
 echo "// Auto-generated" > config.toit
-cat parameters.cfg | while read -l line
-    if test -n "$line"; and not string match -q "#*" "$line"
-        set parts (string split "=" $line)
-        set key (string trim $parts[1])
-        set value (string trim $parts[2])
-        if test -n "$key"; and test -n "$value"
-            echo "$key ::= $value" >> config.toit
-        end
-    end
-end
+while IFS='=' read -r key value; do
+    # Skip empty lines or comments
+    if [[ -z "$key" || "$key" == \#* ]]; then continue; fi
+    
+    # Trim whitespace
+    key=$(echo "$key" | xargs)
+    value=$(echo "$value" | xargs)
+    
+    if [[ -n "$key" && -n "$value" ]]; then
+        echo "${key} ::= ${value}" >> config.toit
+    fi
+done < parameters.cfg
 
-for i in (seq 1 $CONTAINERS)
-    set container_name "stress_worker_$i"
+for ((i=1; i<=CONTAINERS; i++)); do
+    container_name="stress_worker_$i"
     echo ">>> Installing container: $container_name..."
-    jag container install $container_name stress_tool.toit
-end
+    jag container install "$container_name" stress_tool.toit
+done
 
 # Clean up
 rm config.toit

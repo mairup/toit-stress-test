@@ -1,3 +1,5 @@
 config.toit
 .toit-cache/
 *.snapshot
+scratch/
+*.log

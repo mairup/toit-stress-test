@@ -22,9 +22,9 @@ This tool is configured via the `config.toit` file.
 Before running the test, edit `parameters.cfg` using bash or any text editor:
 
 ```ini
-DEFAULT_TASKS=5
-DEFAULT_INTENSITY=0.65
-DEFAULT_DURATION_SECONDS=30
+DEFAULT_TASKS=2
+DEFAULT_INTENSITY=0.69  
+DURATION=10
 ```
 
 ### Running the Tool
@@ -70,10 +70,8 @@ Run the test suite and specify the number of concurrent OS processes (containers
 ```
 
 The suite will automatically progress through several escalating stages, modifying the parameters on the fly:
-1. **Light Warmup**: Low intensity, short duration.
-2. **Standard Operations**: Medium intensity.
-3. **High Task Contention**: Medium intensity, high number of Toit tasks per process.
-4. **CPU Bound Maximum Pressure**: 100% intensity, moderate duration.
-5. **The Gauntlet**: 100% intensity, maximum task count, long duration.
-
-If your system begins to lock up, you can hit `Ctrl+C` to immediately forcefully terminate all associated background VMs and halt the test suite.
+1. **Stage 1: Low Load**: 2 tasks, 20% intensity, short duration.
+2. **Stage 2: Moderate Load**: 5 tasks, 60% intensity.
+3. **Stage 3: High Task Count**: 10 tasks per process, 60% intensity.
+4. **Stage 4: 100% CPU Load**: 5 tasks per process, 100% intensity.
+5. **Stage 5: Maximum System Stress**: 20 tasks per process, 100% intensity, long duration. Utilizes intensive [Mandelbrot](https://en.wikipedia.org/wiki/Mandelbrot_set) and [Monte Carlo Pi](https://en.wikipedia.org/wiki/Monte_Carlo_method#Calculation_of_%CF%80) algorithms to saturate CPU resources.

@@ -21,14 +21,16 @@ while [[ "$#" -gt 0 ]]; do
     case $1 in
         --jag|-j) TARGET="jag"; shift ;;
         --toit|-t) TARGET="toit"; shift ;;
+        --silent|-s) SILENT=true; shift ;;
         --help|-h) 
             echo "Usage: ./stress_tool.sh [options] [-- [toit_args]]"
             echo "Options:"
             echo "  -j, --jag        Run on an ESP32 device using Jaguar (default)"
             echo "  -t, --toit       Run locally using the Toit VM"
+            echo "  -s, --silent     Suppress translation and execution info messages"
             echo "  -h, --help       Show this help message"
             echo ""
-            echo "Example: ./stress_tool.sh -t -- --print"
+            echo "Example: ./stress_tool.sh -t --silent -- --print"
             exit 0
             ;;
         --) shift; EXTRA_ARGS="$EXTRA_ARGS $@"; break ;;
@@ -47,7 +49,9 @@ DURATION=30
 EOF
 fi
 
-echo "Translating parameters.cfg..."
+if [ "$SILENT" != true ]; then
+    echo "Translating parameters.cfg..."
+fi
 
 # Generate config.toit on the fly atomically to avoid race conditions
 TMP_FILE="config_$$.toit"
@@ -69,10 +73,10 @@ mv "$TMP_FILE" config.toit
 
 # Execute based on target
 if [ "$TARGET" == "jag" ]; then
-    echo "Running on ESP32 via Jaguar..."
+    if [ "$SILENT" != true ]; then echo "Running on ESP32 via Jaguar..."; fi
     jag run stress_tool.toit
 else
-    echo "Running locally via Toit VM..."
+    if [ "$SILENT" != true ]; then echo "Running locally via Toit VM..."; fi
     toit run stress_tool.toit -- $EXTRA_ARGS
 fi
 

@@ -46,11 +46,11 @@ EOF
     for ((i=1; i<=CONTAINERS; i++)); do
         if [ $i -eq 1 ]; then
             # The first process is the designated reporter
-            ./stress_tool.sh --toit -- --print &
+            ./stress_tool.sh --toit --silent -- --print &
         else
             # All subsequent processes are silent by default
-            ./stress_tool.sh --toit &
-        end
+            ./stress_tool.sh --toit --silent &
+        fi
     done
 
     # Wait for all background processes to finish
@@ -64,11 +64,11 @@ EOF
 # DECLARATIVE TEST LIST
 # ---------------------------------------------------------
 
-run_test 2 0.20 10 "Light Warmup"
-run_test 5 0.60 20 "Standard Operations"
-run_test 10 0.60 20 "High Task Contention"
-run_test 5 1.00 30 "CPU Bound Maximum Pressure"
-run_test 20 1.00 40 "The Gauntlet"
+run_test 2 0.20 10 "Stage 1: Low Load"
+run_test 5 0.60 20 "Stage 2: Moderate Load"
+run_test 10 0.60 20 "Stage 3: High Task Count"
+run_test 5 1.00 30 "Stage 4: 100% CPU Load"
+run_test 20 1.00 40 "Stage 5: Maximum System Stress"
 
 echo ""
 echo "========================================================"

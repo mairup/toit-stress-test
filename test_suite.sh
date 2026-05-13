@@ -16,19 +16,35 @@ while [[ "$#" -gt 0 ]]; do
         --max)    FILTER="$FILTER max"; shift ;;
         -d=*|--duration=*)
             REQUESTED_DURATION="${1#*=}"
+            if [[ ! "$REQUESTED_DURATION" =~ ^[0-9]+$ ]]; then
+                echo "Error: Invalid duration '$REQUESTED_DURATION'. Must be a positive integer."
+                exit 1
+            fi
             shift
             ;;
         -d|--duration)
             shift
             REQUESTED_DURATION=$1
+            if [[ ! "$REQUESTED_DURATION" =~ ^[0-9]+$ ]]; then
+                echo "Error: Invalid duration '$REQUESTED_DURATION'. Must be a positive integer."
+                exit 1
+            fi
             shift
             ;;
         --help|-h)
             echo "Usage: ./test_suite.sh [containers] [--min] [--medium] [--high] [--max] [-d|--duration seconds]"
             exit 0
             ;;
-        [0-9]*)   CONTAINERS=$1; shift ;;
-        *) shift ;;
+        [0-9]*)
+            if [[ ! "$1" =~ ^[0-9]+$ ]]; then
+                echo "Error: Invalid container count '$1'. Must be a positive integer."
+                exit 1
+            fi
+            CONTAINERS=$1; shift ;;
+        *)
+            echo "Error: Unknown argument '$1'"
+            exit 1
+            ;;
     esac
 done
 

@@ -58,15 +58,20 @@ For heavy-duty system load testing, the `test_suite.sh` script orchestrates a gr
 
 ### Usage
 
-Run the test suite and specify the number of concurrent OS processes (containers) you want to spawn:
+Run the test suite and specify the number of concurrent OS processes (containers) you want to spawn. You can also filter by intensity level or set a fixed total duration:
 
 ```bash
-./test_suite.sh <containers>
+./test_suite.sh <containers> [--min] [--medium] [--high] [--max] [-d|--duration <seconds>]
 ```
 
-**Example (Spawning 32 concurrent OS processes):**
+**Example (Running a 60-second quick benchmark with 16 processes):**
 ```bash
-./test_suite.sh 32
+./test_suite.sh 16 --duration 60
+```
+
+**Example (Running only the 'max' intensity tests with 32 processes):**
+```bash
+./test_suite.sh 32 --max
 ```
 
 The suite will automatically progress through several escalating stages, modifying the parameters on the fly:
